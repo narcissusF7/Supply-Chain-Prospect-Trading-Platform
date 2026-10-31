@@ -1,0 +1,73 @@
+<svg viewBox="0 0 680 596" width="100%" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>供应平台分层架构图</title>
+  <desc>九层分层架构：UI、API网关、智能体编排、业务智能体、合规横切、业务服务、触达履约通道、数据单一事实源、观测</desc>
+  <text x="20" y="28" font-size="15" font-weight="500" fill="#26215C">供应平台 · 分层架构图</text>
+
+  <g>
+    <rect x="20" y="44" width="150" height="50" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+    <text x="95" y="69" font-size="13" font-weight="500" fill="#0C447C" text-anchor="middle" dominant-baseline="central">UI 层</text>
+    <rect x="178" y="44" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="63" font-size="11.5" fill="#444441">仪表盘·线索池·采集任务·评分模型</text>
+    <text x="190" y="81" font-size="11.5" fill="#444441">触达任务·意向工作台·签约履约·合规配置·审计</text>
+  </g>
+
+  <g>
+    <rect x="20" y="103" width="150" height="50" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+    <text x="95" y="128" font-size="13" font-weight="500" fill="#3C3489" text-anchor="middle" dominant-baseline="central">API 网关层</text>
+    <rect x="178" y="103" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="128" font-size="11.5" fill="#444441" dominant-baseline="central">API Router v1 · 鉴权 / JWT / RBAC</text>
+  </g>
+
+  <g>
+    <rect x="20" y="162" width="150" height="50" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+    <text x="95" y="187" font-size="13" font-weight="500" fill="#085041" text-anchor="middle" dominant-baseline="central">智能体编排层</text>
+    <rect x="178" y="162" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="187" font-size="11.5" fill="#444441" dominant-baseline="central">编排智能体：读状态机 → 派活 → payload 投影（LangGraph）</text>
+  </g>
+
+  <g>
+    <rect x="20" y="221" width="150" height="50" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+    <text x="95" y="246" font-size="13" font-weight="500" fill="#712B13" text-anchor="middle" dominant-baseline="central">业务智能体层</text>
+    <rect x="178" y="221" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="240" font-size="11.5" fill="#444441">数据智能体（采集+筛选+入库）</text>
+    <text x="190" y="258" font-size="11.5" fill="#444441">营销智能体（触达+意向识别）· 履约智能体（签约+发货）</text>
+  </g>
+
+  <g>
+    <rect x="20" y="280" width="150" height="50" rx="8" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+    <text x="95" y="305" font-size="13" font-weight="500" fill="#791F1F" text-anchor="middle" dominant-baseline="central">合规层（横切）</text>
+    <rect x="178" y="280" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="305" font-size="11.5" fill="#444441" dominant-baseline="central">合规守护 check()：退订·谢绝来电·时段·频次·PIPL — 任何触达前强制校验</text>
+  </g>
+
+  <g>
+    <rect x="20" y="339" width="150" height="50" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+    <text x="95" y="364" font-size="13" font-weight="500" fill="#2C2C2A" text-anchor="middle" dominant-baseline="central">业务服务层</text>
+    <rect x="178" y="339" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="364" font-size="11.5" fill="#444441" dominant-baseline="central">采集适配·评分引擎·入库去重打标·触达通道·电子签·订单/WMS/物流</text>
+  </g>
+
+  <g>
+    <rect x="20" y="398" width="150" height="50" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+    <text x="95" y="423" font-size="13" font-weight="500" fill="#633806" text-anchor="middle" dominant-baseline="central">触达/履约通道层</text>
+    <rect x="178" y="398" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="423" font-size="11.5" fill="#444441" dominant-baseline="central">106短信(阿里云) · AI外呼(P1) · WMS · 快递鸟物流 · 法大大电子签</text>
+  </g>
+
+  <g>
+    <rect x="20" y="457" width="150" height="50" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+    <text x="95" y="482" font-size="13" font-weight="500" fill="#27500A" text-anchor="middle" dominant-baseline="central">数据·单一事实源层</text>
+    <rect x="178" y="457" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="476" font-size="11.5" fill="#444441">PostgreSQL：leads/state/contract/order/audit + pgvector</text>
+    <text x="190" y="494" font-size="11.5" fill="#444441">Redis：频次限流 · 去重 · 幂等键 · 缓存 · 队列</text>
+  </g>
+
+  <g>
+    <rect x="20" y="516" width="150" height="50" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width="0.5"/>
+    <text x="95" y="541" font-size="13" font-weight="500" fill="#72243E" text-anchor="middle" dominant-baseline="central">观测层</text>
+    <rect x="178" y="516" width="482" height="50" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="190" y="541" font-size="11.5" fill="#444441" dominant-baseline="central">审计日志 · 转化漏斗看板 · 异常告警</text>
+  </g>
+
+  <text x="20" y="582" font-size="11" fill="#6b7280">数据自上而下流转；合规层横切于所有触达动作之前。</text>
+</svg>

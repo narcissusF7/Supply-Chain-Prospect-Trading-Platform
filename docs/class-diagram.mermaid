@@ -1,0 +1,126 @@
+erDiagram
+  LEADS ||--o| LEAD_STATES : "1:1 状态机"
+  LEADS ||--o{ CONTACT_TASKS : "1:N 触达"
+  LEADS ||--o{ COMPLIANCE_CHECKS : "1:N 校验"
+  LEADS ||--o{ CONTRACTS : "1:N 合同"
+  LEADS ||--o{ ORDERS : "1:N 订单"
+  LEADS ||--o{ AUDIT_LOGS : "1:N 审计"
+  LEADS ||--o{ LEAD_TAGS : "打标"
+  TAGS ||--o{ LEAD_TAGS : "被引用"
+  CONTRACTS ||--o| ORDERS : "1:1 关联合同"
+  CONTACT_TASKS ||--o| COMPLIANCE_CHECKS : "触达前校验"
+  COLLECTION_TASKS ||--o{ LEADS : "产生线索"
+  SCORE_MODELS ||--o{ LEADS : "评分版本"
+
+  LEADS {
+    uuid id PK "线索主键"
+    string unified_social_credit_code "统一社会信用代码(唯一索引,可空)"
+    string phone_encrypted "手机号加密"
+    string phone_hash "去重键(索引)"
+    string company_name "公司名"
+    string legal_person "法人"
+    string industry "行业"
+    string region "区域"
+    string source "企查查/美团/抖音来客"
+    jsonb unified_profile "归一化画像"
+    int score "0-100"
+    string score_tier "A/B/C"
+    uuid score_model_id "FK→SCORE_MODELS"
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  LEAD_STATES {
+    uuid lead_id PK "FK→LEADS"
+    string current_state "NEW/SCORED/CONTACTED/INTERESTED/SIGNED/SHIPPED"
+    string state_owner "data/marketing/fulfillment"
+    int version "乐观锁"
+    jsonb transition_history
+    timestamptz last_transition_at
+  }
+  CONTACT_TASKS {
+    uuid id PK
+    uuid lead_id FK "→LEADS"
+    string channel "sms/voice"
+    string task_type "marketing/contract/notify"
+    string status "pending/sent/failed/delivered"
+    uuid compliance_check_id FK "→COMPLIANCE_CHECKS"
+    string dedup_key "幂等"
+    text content "话术/模板"
+    jsonb receipt "回执"
+    timestamptz sent_at
+    timestamptz delivered_at
+    string created_by
+  }
+  COMPLIANCE_LISTS {
+    uuid id PK
+    string list_type "opt_out_sms/do_not_call/blocklist"
+    string identifier "phone_hash/credit_code"
+    string reason
+    timestamptz effective_at
+    timestamptz expires_at
+  }
+  COMPLIANCE_CHECKS {
+    uuid id PK
+    uuid lead_id FK "→LEADS"
+    string channel
+    string result "pass/block"
+    jsonb reasons
+    string strategy_version
+    timestamptz checked_at
+  }
+  CONTRACTS {
+    uuid id PK
+    uuid lead_id FK "→LEADS"
+    string provider "法大大"
+    string contract_no
+    string status "draft/sent/signed/void"
+    string sign_url
+    string qualification_status "pending/approved/rejected"
+    timestamptz signed_at
+  }
+  ORDERS {
+    uuid id PK
+    uuid lead_id FK "→LEADS"
+    uuid contract_id FK "→CONTRACTS"
+    string status "created/paid/shipped/delivered"
+    string wms_order_no
+    string logistics_no
+    string carrier
+    timestamptz shipped_at
+    timestamptz delivered_at
+  }
+  AUDIT_LOGS {
+    uuid id PK
+    string actor "operator/agent/system"
+    string action
+    string object_type
+    uuid object_id
+    string result
+    jsonb detail
+    timestamptz created_at
+  }
+  TAGS {
+    uuid id PK
+    string name
+    string tag_type "system/custom"
+  }
+  LEAD_TAGS {
+    uuid lead_id PK,FK "→LEADS"
+    uuid tag_id PK,FK "→TAGS"
+  }
+  SCORE_MODELS {
+    uuid id PK
+    string name
+    jsonb weights "权重配置"
+    int version
+    boolean is_active
+  }
+  COLLECTION_TASKS {
+    uuid id PK
+    string source
+    string region
+    string industry
+    string cron_schedule
+    string status
+    timestamptz last_run_at
+  }

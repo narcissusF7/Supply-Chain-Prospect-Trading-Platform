@@ -1,0 +1,63 @@
+sequenceDiagram
+    autonumber
+    participant ORCH as 编排智能体(LangGraph)
+    participant DB as PostgreSQL/Redis
+    participant DA as 数据智能体
+    participant MA as 营销智能体
+    participant COMP as 合规守护中间件
+    participant SMS as 106短信通道(阿里云)
+    participant FA as 履约智能体
+    participant ESIGN as 法大大电子签
+    participant WMS as WMS/快递鸟物流
+    participant AUD as 审计日志
+
+    Note over ORCH,DB: 阶段1 · 采集→评分 (Data Agent 管辖)
+    ORCH->>DB: state.get(lead_id) → NEW
+    ORCH->>DA: dispatch(lead_id) [payload 投影]
+    DA->>DA: collect(task) → normalize → dedup(CRM upsert)
+    DA->>DB: upsert leads (phone_encrypted, phone_hash)
+    DA->>DA: score(lead_id, model_version)
+    DA->>DB: 写 score / score_tier
+    DA->>DB: state.transition(NEW→SCORED, owner=data, 行锁+版本)
+    DA->>AUD: 写审计(采集/评分/状态变更)
+
+    Note over ORCH,MA: 阶段2 · 触达→意向 (Marketing Agent 管辖)
+    ORCH->>DB: state.get → SCORED
+    ORCH->>MA: dispatch(lead_id)
+    MA->>COMP: check(lead_id, channel=sms)
+    COMP->>DB: 查 compliance_lists(退订/谢绝来电/blocklist)
+    COMP->>DB: 查 Redis 频次(7日≤3次) + 时段(9-21) + PIPL同意
+    alt 不通过
+        COMP-->>MA: {result:block, reasons[]}
+        MA->>AUD: 写审计(合规拦截+原因)
+        MA-->>ORCH: 阻断, 不触达
+    else 通过
+        COMP-->>MA: {result:pass, strategy_version}
+        MA->>SMS: send_sms(lead_id, template, 退订回T)
+        SMS-->>MA: 回执(delivered)
+        MA->>DB: state.transition(SCORED→CONTACTED, owner=marketing)
+        MA->>AUD: 写审计(触达/合规通过)
+        SMS-->>MA: 用户回复/回执回调
+        MA->>MA: classify_intent(receipt/关键词)
+        MA->>DB: state.transition(CONTACTED→INTERESTED, 或人工修正回退)
+        MA->>AUD: 写审计(意向识别+依据)
+    end
+
+    Note over ORCH,FA: 阶段3 · 签约→履约 (Fulfillment Agent 管辖)
+    ORCH->>DB: state.get → INTERESTED
+    ORCH->>FA: dispatch(lead_id)
+    FA->>ESIGN: create_contract(lead_id) → sign_url
+    FA->>DB: contracts(status=draft/sent)
+    ESIGN-->>FA: 签署完成事件(callback)
+    FA->>FA: review_qualification(营业执照)
+    FA->>DB: contracts(status=signed, qualification=approved)
+    FA->>DB: state.transition(INTERESTED→SIGNED, owner=fulfillment)
+    FA->>DB: create_order(contract_id)
+    FA->>WMS: ship(order) → wms_order_no
+    WMS-->>FA: logistics_no / carrier
+    FA->>FA: notify_customer(order_id)
+    FA->>DB: state.transition(SIGNED→SHIPPED)
+    FA->>AUD: 写审计(签约/资质/履约/通知)
+
+    Note over ORCH,AUD: 全程
+    AUD->>DB: 全量留存(操作人/时间/对象/结果)，可检索导出

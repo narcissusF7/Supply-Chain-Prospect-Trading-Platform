@@ -1,0 +1,14 @@
+# 供应平台 supply_platform MVP 依赖（零外部重依赖，仅标准库 + 以下）
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+SQLAlchemy>=2.0.0
+pydantic>=2.5.0
+pytest>=8.0.0
+
+# 编排（可选）：LangGraph 状态图编排；未安装时 orchestrator 自动回退确定性实现
+langgraph>=0.2.0
+langchain-core>=0.2.0
+
+# 阿里云短信官方 SDK（可选）：未安装时自动回退 RPC 签名 V1 原始 HTTP 实现
+# 注：代码中 import 容错，缺失不影响运行；如需真实短信通道请取消下一行注释并安装
+# alibabacloud_dysmsapi20170525>=3.0.0
